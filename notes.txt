@@ -1,0 +1,50 @@
+PROCEDURE
+Parse command line arguments
+
+Find startxref and offset
+Seek to xref and read into memory (fixed structure; 20 bytes per entry (p. 94))
+Find trailer and thus the Catalog (Root) object id and Prev xref
+While there is a Prev xref, seek to that xref and repeat
+Compile all the xrefs into a std::map (object_id, offset)
+Seek to the Catalog and read into memory (variable length)
+Look up Pages entry to find root of page tree
+Seek to page tree and recursively reconstruct in memory
+Construct a std::map to map absolute page number to object number
+
+Read toc file and construct tree in memory
+
+Copy entire input PDF to output PDF
+Append Outline object with new object id
+Append new Catalog object with new object id that references the outline
+Append new xref section referencing new Outline and new Catalog
+Append new trailer, which is the old trailer updated to refer to the new Catalog
+Append %%EOF
+
+NOTES
+Page references are to "PDF Reference, Sixth Edition, version 1.7" available at https://www.adobe.com/devnet/pdf/pdf_reference_archive.html
+Not trying to delete the old catalog object, just supersede it.
+Not yet using PageLabels, S. 8.3.1 p. 594 (e.g. front matter, i ii iii iv ... before we get to 1 2 3)
+As of PDF 1.5, some or all xref information may be supplied in streams (p. 93). Not attempting to cope with this.
+
+CLASSES
+Xref
+- essentially a std::map
+- void add_section(string) method to add a subsection to the table
+- last_object_id()
+
+PageTree
+- internally a tree
+- object_id(page_number) method, using depth first search to find the object number of a given page
+
+TOC
+- tree structure
+- construct from file
+- to_string(page_tree) method for output (recursive)
+
+Dictionary
+- represent a PostScript/PDF dictionary
+- std::map
+- to_string method
+- construct from file?
+- possibility of containing other dictionaries
+- used for Catalog, Outline nodes, Trailer
