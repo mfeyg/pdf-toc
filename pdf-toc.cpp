@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool has_extension(char *filename, char *extension)
+bool has_extension(const char *filename, const char *extension)
 {
     int offset = strlen(filename) - strlen(extension);
     return offset >= 0 && strcmp(filename + offset, extension) == 0;
