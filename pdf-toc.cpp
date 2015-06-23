@@ -28,4 +28,10 @@ void check_arguments(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     check_arguments(argc, argv);
+    ifstream in_pdf(argv[1]);
+    ifstream toc_txt(argv[2]);
+    ofstream out_pdf(argv[4]);
+
+    out_pdf << in_pdf.rdbuf();
+    out_pdf << toc_txt.rdbuf();
 }
