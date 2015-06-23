@@ -58,9 +58,9 @@ int find_startxref(ifstream *in_pdf)
 void add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
 {
     in_pdf->seekg(byte_offset);
-    char line[21];
-    in_pdf->get(line, 6);
-    if (strstr(line, "xref") != line)
+    string xref;
+    *in_pdf >> xref;
+    if (xref != "xref")
     {
         cerr << "xref is not where it is supposed to be" << endl;
         exit(EXIT_FAILURE);
