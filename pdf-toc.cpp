@@ -55,7 +55,7 @@ int find_startxref(ifstream *in_pdf)
     return byte_offset;
 }
 
-void add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
+string add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
 {
     in_pdf->seekg(byte_offset);
     string xref;
@@ -65,21 +65,47 @@ void add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
         cerr << "xref is not where it is supposed to be" << endl;
         exit(EXIT_FAILURE);
     }
-    int obj_id;
-    int count;
-    *in_pdf >> dec >> obj_id >> count;
-    for (int i = 0; i < count; i++)
+
+    string token;
+    while (*in_pdf >> token, token != "trailer")
     {
-        int offset;
-        int generation;
-        char in_use;
-        *in_pdf >> offset >> generation >> in_use;
-        if (in_use == 'n')
+        int first_object;
+        istringstream(token) >> first_object;
+        int count;
+        *in_pdf >> count;
+        for (int i = 0; i < count; i++)
         {
-            // std::map.insert() only inserts if key is not yet present
-            xref_map->insert(pair<int, int>(obj_id + i, offset));
+            int offset;
+            int generation;
+            char in_use;
+            *in_pdf >> offset >> generation >> in_use;
+            if (in_use == 'n')
+            {
+                // std::map.insert() only inserts if key is not yet present
+                xref_map->insert(pair<int, int>(first_object + i, offset));
+            }
         }
     }
+    int start_of_trailer = (int) in_pdf->tellg() - 7;
+    int prev = -1;
+    while (*in_pdf >> token, token != "%%EOF")
+    {
+        if (token == "/Prev")
+        {
+            *in_pdf >> prev;
+        }
+    }
+    int length_of_trailer = (int) in_pdf->tellg() + 2 - start_of_trailer;
+    cout << start_of_trailer << '\t' << length_of_trailer << endl;
+    if (prev != -1)
+    {
+        add_xref(xref_map, in_pdf, prev);
+    }
+    char trailer[length_of_trailer];
+    in_pdf->seekg(start_of_trailer);
+    in_pdf->read(trailer, length_of_trailer);
+    trailer[length_of_trailer] = '\0';
+    return string(trailer);
 }
 
 int main(int argc, char *argv[])
@@ -91,10 +117,9 @@ int main(int argc, char *argv[])
 
     int byte_offset = find_startxref(&in_pdf);
     map<int, int> xref_map;
-    add_xref(&xref_map, &in_pdf, byte_offset);
+    string trailer = add_xref(&xref_map, &in_pdf, byte_offset);
 
     cout << "xref_map has " << xref_map.size() << " elements." << endl;
-
     //in_pdf.seekg(0);
     //out_pdf << in_pdf.rdbuf();
     //out_pdf << toc_txt.rdbuf();
