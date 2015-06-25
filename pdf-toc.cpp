@@ -90,7 +90,7 @@ string add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
     int prev = -1;
     while (*in_pdf >> token, token != "%%EOF")
     {
-        if (token == "/Prev")
+        if (has_extension(token.c_str(), "/Prev"))
         {
             *in_pdf >> prev;
         }
