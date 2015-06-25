@@ -113,7 +113,7 @@ string add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
         } while(token != "%%EOF");
 
         int length_of_trailer = (int) in_pdf->tellg() - start_of_trailer;
-        char trailer[length_of_trailer];
+        char trailer[length_of_trailer + 1];
         memset(trailer, '\0', length_of_trailer + 1);
         in_pdf->seekg(start_of_trailer);
         in_pdf->read(trailer, length_of_trailer);
