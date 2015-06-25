@@ -16,6 +16,17 @@ bool has_extension(const char *filename, const char *extension)
     return offset >= 0 && strcmp(filename + offset, extension) == 0;
 }
 
+int key_lookup(const char *text, const char *key)
+{
+    int value = -1;
+    char* ptr = strstr(text, key);
+    if (ptr != NULL)
+    {
+        istringstream(ptr + strlen(key)) >> value;
+    }
+    return value;
+}
+
 void check_arguments(int argc, char *argv[])
 {
     if (argc == 5
@@ -57,61 +68,68 @@ int find_startxref(ifstream *in_pdf)
 
 string add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
 {
-    in_pdf->seekg(byte_offset);
-    string xref;
-    *in_pdf >> xref;
-    if (xref != "xref")
+    int count = 0;
+    string result;
+    while (byte_offset != -1)
     {
-        cerr << "xref is not where it is supposed to be" << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    string token;
-    while (*in_pdf >> token, token != "trailer")
-    {
-        int first_object;
-        istringstream(token) >> first_object;
-        int count;
-        *in_pdf >> count;
-        for (int i = 0; i < count; i++)
+        count++;
+        in_pdf->seekg(byte_offset);
+        if (in_pdf->tellg() != byte_offset)
         {
-            int offset;
-            int generation;
-            char in_use;
-            *in_pdf >> offset >> generation >> in_use;
-            if (in_use == 'n')
+            cerr << "tellg() != byte_offset (Error in PDF?)" << endl;
+            exit(EXIT_FAILURE);
+        }
+        string xref;
+        *in_pdf >> xref;
+        if (xref != "xref")
+        {
+            cerr << "xref is not where it is supposed to be" << endl;
+            exit(EXIT_FAILURE);
+        }
+
+        string token;
+        while (*in_pdf >> token, token != "trailer")
+        {
+            int first_object;
+            istringstream(token) >> first_object;
+            int count;
+            *in_pdf >> count;
+            for (int i = 0; i < count; i++)
             {
-                // std::map.insert() only inserts if key is not yet present
-                xref_map->insert(pair<int, int>(first_object + i, offset));
+                int offset;
+                int generation;
+                char in_use;
+                *in_pdf >> offset >> generation >> in_use;
+                if (in_use == 'n')
+                {
+                    // std::map.insert() only inserts if key is not yet present
+                    xref_map->insert(pair<int, int>(first_object + i, offset));
+                }
             }
         }
-    }
-    int start_of_trailer = (int) in_pdf->tellg() - 7;
-    int prev = -1;
-    while (*in_pdf >> token, token != "%%EOF")
-    {
-        if (has_extension(token.c_str(), "/Prev"))
+        int start_of_trailer = (int) in_pdf->tellg() - 7;
+        do {
+            *in_pdf >> token;
+        } while(token != "%%EOF");
+
+        int length_of_trailer = (int) in_pdf->tellg() - start_of_trailer;
+        char trailer[length_of_trailer];
+        memset(trailer, '\0', length_of_trailer + 1);
+        in_pdf->seekg(start_of_trailer);
+        in_pdf->read(trailer, length_of_trailer);
+        byte_offset = key_lookup(trailer, "/Prev");
+        if (count == 1)
         {
-            *in_pdf >> prev;
+            result = string(trailer);
         }
     }
-    int length_of_trailer = (int) in_pdf->tellg() + 2 - start_of_trailer;
-    cout << start_of_trailer << '\t' << length_of_trailer << endl;
-    if (prev != -1)
-    {
-        add_xref(xref_map, in_pdf, prev);
-    }
-    char trailer[length_of_trailer];
-    in_pdf->seekg(start_of_trailer);
-    in_pdf->read(trailer, length_of_trailer);
-    trailer[length_of_trailer] = '\0';
-    return string(trailer);
+    return result;
 }
 
 int main(int argc, char *argv[])
 {
     check_arguments(argc, argv);
-    ifstream in_pdf(argv[1]);
+    ifstream in_pdf(argv[1], ios::binary);
     ifstream toc_txt(argv[2]);
     ofstream out_pdf(argv[4]);
 
