@@ -74,9 +74,9 @@ string add_xref(map<int, int> *xref_map, ifstream *in_pdf, int byte_offset)
     {
         count++;
         in_pdf->seekg(byte_offset);
-        if (in_pdf->tellg() != byte_offset)
+        if (in_pdf->fail())
         {
-            cerr << "tellg() != byte_offset (Error in PDF?)" << endl;
+            cerr << "Failure seeking to " << byte_offset << " (Error in PDF?)" << endl;
             exit(EXIT_FAILURE);
         }
         string xref;
