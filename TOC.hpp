@@ -7,8 +7,6 @@
 
 namespace spirit = boost::spirit;
 namespace qi = spirit::qi;
-namespace ascii = spirit::ascii;
-namespace phoenix = boost::phoenix;
 
 struct TOC {
   std::string name;
@@ -31,7 +29,7 @@ struct TOC_grammar : qi::grammar<Iterator, TOC(), qi::locals<int> >
     using qi::eps;
     using qi::lit;
     using qi::int_;
-    using ascii::char_;
+    using spirit::ascii::char_;
     using qi::eol;
     using qi::repeat;
     using qi::inf;
