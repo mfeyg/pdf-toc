@@ -24,8 +24,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 template <typename Iterator>
 struct TOC_grammar : qi::grammar<Iterator, TOC(), qi::locals<int> >
 {
-  template<typename Iterator>
-  TOC_grammar<Iterator>::TOC_grammar() : TOC_grammar::base_type(toc) {
+  TOC_grammar() : TOC_grammar::base_type(toc) {
     using qi::eps;
     using qi::lit;
     using qi::int_;
