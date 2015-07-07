@@ -12,7 +12,7 @@ int main() {
   Object_grammar<boost::spirit::istream_iterator> grammar;
   bool res = qi::phrase_parse(begin, end, grammar, qi::ascii::space, obj);
   //std::cout << res << std::endl;
-  Object_karma<std::ostream_iterator<char> > gen;
+  Object_generator<std::ostream_iterator<char> > gen;
   karma::generate_delimited(std::ostream_iterator<char>(std::cout), gen, karma::ascii::space, obj);
   return 0;
 }

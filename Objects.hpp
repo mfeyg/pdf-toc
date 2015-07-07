@@ -175,9 +175,9 @@ struct Object_grammar : qi::grammar<Iterator, Object()>
 };
 
 template <typename OutputIterator>
-struct Object_karma : karma::grammar<OutputIterator, Object()>
+struct Object_generator : karma::grammar<OutputIterator, Object()>
 {
-  Object_karma() : Object_karma::base_type(object) {
+  Object_generator() : Object_generator::base_type(object) {
     using karma::int_;
     using karma::double_;
     using karma::bool_;
