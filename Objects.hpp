@@ -203,7 +203,7 @@ struct Object_generator : karma::grammar<OutputIterator, Object()>
     array = '[' << -(object % space) << ']';
 
     dict_entry = name << '\t' << object;
-    dict = dict_entry % '\n';
+    dict = -(dict_entry % '\n');
     dictionary = "<<" << dict << ">>";
 
     null = lit("null")[_1 = Null()];
