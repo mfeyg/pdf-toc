@@ -5,7 +5,6 @@
 #include <boost/spirit/include/phoenix_operator.hpp>
 #include <boost/phoenix/bind.hpp>
 #include <boost/phoenix/stl/container.hpp>
-#include <boost/fusion/adapted/std_pair.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 
 #include <string>
