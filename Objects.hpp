@@ -86,8 +86,6 @@ struct Object_grammar : qi::grammar<Iterator, Object()>
     using qi::attr;
     using qi::ascii::space;
     using qi::omit;
-    using qi::eps;
-    using boost::phoenix::insert;
 
     object %= boolean | integer | real | string | name | array | dictionary | null;
 
@@ -124,7 +122,7 @@ struct Object_grammar : qi::grammar<Iterator, Object()>
     array %= '[' >> omit[*space] >> *(object >> *space) >> ']';
 
     dictionary %= "<<" >> omit[*space] >> dict >> ">>";
-    dict = *(dict_entry[insert(_val,_1)]);
+    dict = *dict_entry;
     dict_entry %= name >> omit[*space] >> object >> omit[*space];
 
     null = lit("null")[_val = Null()];
